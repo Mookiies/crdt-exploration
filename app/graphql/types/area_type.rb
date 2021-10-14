@@ -7,5 +7,7 @@ module Types
     field :inspection_id, Integer, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+
+    field :items, [Types::ItemType], null: false
   end
 end
