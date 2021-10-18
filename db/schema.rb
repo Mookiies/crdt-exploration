@@ -15,7 +15,7 @@ ActiveRecord::Schema.define(version: 2021_10_14_223846) do
   create_table "areas", force: :cascade do |t|
     t.string "name", null: false
     t.integer "position"
-    t.boolean "tombstone", null: false
+    t.boolean "tombstone", default: false, null: false
     t.integer "inspection_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 2021_10_14_223846) do
 
   create_table "inspections", force: :cascade do |t|
     t.string "name", null: false
-    t.boolean "tombstone", null: false
+    t.boolean "tombstone", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
@@ -32,8 +32,8 @@ ActiveRecord::Schema.define(version: 2021_10_14_223846) do
   create_table "items", force: :cascade do |t|
     t.string "name", null: false
     t.text "note"
-    t.boolean "flagged", null: false
-    t.boolean "tombstone", null: false
+    t.boolean "flagged", default: false, null: false
+    t.boolean "tombstone", default: false, null: false
     t.integer "area_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
