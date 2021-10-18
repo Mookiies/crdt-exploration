@@ -12,29 +12,29 @@
 
 ActiveRecord::Schema.define(version: 2021_10_14_223846) do
 
-  create_table "areas", force: :cascade do |t|
+  create_table "areas", charset: "utf8mb4", force: :cascade do |t|
     t.string "name", null: false
     t.integer "position"
     t.boolean "tombstone", default: false, null: false
-    t.integer "inspection_id", null: false
+    t.bigint "inspection_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["inspection_id"], name: "index_areas_on_inspection_id"
   end
 
-  create_table "inspections", force: :cascade do |t|
+  create_table "inspections", charset: "utf8mb4", force: :cascade do |t|
     t.string "name", null: false
     t.boolean "tombstone", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  create_table "items", force: :cascade do |t|
+  create_table "items", charset: "utf8mb4", force: :cascade do |t|
     t.string "name", null: false
     t.text "note"
     t.boolean "flagged", default: false, null: false
     t.boolean "tombstone", default: false, null: false
-    t.integer "area_id", null: false
+    t.bigint "area_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["area_id"], name: "index_items_on_area_id"
