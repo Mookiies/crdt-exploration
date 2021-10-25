@@ -7,6 +7,6 @@ module Types
     argument :id, Integer, required: false
     argument :name, String, required: true
     argument :tombstone, Boolean, required: false
-    argument :areas, [Types::AreaAttributes], required: false
+    argument :areas_attributes, [Types::AreaAttributes], required: false
   end
 end

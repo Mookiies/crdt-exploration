@@ -9,6 +9,6 @@ module Types
     argument :position, Integer, required: false
     argument :tombstone, Boolean, required: false
 
-    argument :items, [Types::ItemAttributes], required: false
+    argument :items_attributes, [Types::ItemAttributes], required: false
   end
 end
