@@ -1,15 +1,6 @@
 require 'securerandom'
 
 class AddUuidToInspection < ActiveRecord::Migration[6.1]
-  # def change
-  #   add_column :inspections, :uuid, :string, unique: true
-  #   change_column_null :inspections, :uuid, false, SecureRandom.uuid
-  #
-  #
-  #   # add_column :areas, :uuid, :string, unique: true
-  #   # add_column :items, :uuid, :string, unique: true
-  # end
-
   def up
     add_column :inspections, :uuid, :string, unique: true
     add_column :areas, :uuid, :string, unique: true
