@@ -12,7 +12,7 @@ class Inspection < ApplicationRecord
     if record.nil?
       record = create(attributes)
     else
-      record.update(attributes)
+      record.assign_attributes(attributes)
     end
     record
   end
