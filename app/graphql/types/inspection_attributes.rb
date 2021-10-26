@@ -8,6 +8,9 @@ module Types
     argument :uuid, String, required: false
     argument :name, String, required: true
     argument :tombstone, Boolean, required: false
+
     argument :areas_attributes, [Types::AreaAttributes], required: false
+
+    argument  :_deleted, Boolean, required: false
   end
 end

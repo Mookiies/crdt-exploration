@@ -12,5 +12,6 @@ module Types
     argument :position, Integer, required: false
     argument :tombstone, Boolean, required: false
 
+    argument  :_deleted, Boolean, required: false
   end
 end
