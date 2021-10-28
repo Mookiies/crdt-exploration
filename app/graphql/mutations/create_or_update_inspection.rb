@@ -11,8 +11,7 @@ module Mutations
       # TODO: how to wrap all of this into one transaction (including timestamps)
       inspection_hash = inspection.to_hash
       areas = inspection_hash[:areas_attributes]
-      record = Inspection.includes(areas: :items).update_or_create_by({ uuid: inspection_hash[:uuid] },
-                                                                      inspection_hash.except(:areas_attributes, :_deleted))
+      record = Inspection.includes(areas: :items).update_or_create_by({ uuid: inspection_hash[:uuid] }, inspection_hash)
 
       # TODO how and when to delete areas based on the array
       # TODO have to explicitly specify that something is deleted (deleted_at column or something)
