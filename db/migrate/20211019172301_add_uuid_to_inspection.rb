@@ -6,6 +6,7 @@ class AddUuidToInspection < ActiveRecord::Migration[6.1]
     add_column :areas, :uuid, :string, unique: true
     add_column :items, :uuid, :string, unique: true
 
+    # TODO either use an embeded active record model or do this with sql
     Inspection.find_each do |inspection|
       inspection.uuid = SecureRandom.uuid
       inspection.save!
