@@ -10,6 +10,7 @@ module Types
     argument :tombstone, Boolean, required: false
 
     argument :areas_attributes, [Types::AreaAttributes], required: false
+    argument :timestamps_attributes, Types::InspectionsTimestampAttributes, required: false
 
     argument  :_deleted, Boolean, required: false
   end
