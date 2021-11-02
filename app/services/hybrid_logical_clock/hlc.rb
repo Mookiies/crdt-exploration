@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module HybridLogicalClock
   class Hlc
     include Comparable
@@ -13,6 +14,10 @@ module HybridLogicalClock
     # @param count [Integer] the current count
     # @param node [String] a unique identifier for a node
     def initialize(node:, now: Time.current.to_i, count: 0)
+      raise TypeError, 'now expects an integer' unless now.is_a?(Integer)
+      raise TypeError, 'count expects an integer' unless count.is_a?(Integer)
+      raise TypeError, 'node expects a string' unless node.is_a?(String)
+
       @ts = now
       @count = count
       @node = node
@@ -50,14 +55,16 @@ module HybridLogicalClock
     end
 
     # @param remote_hybrid_clock [HybridClockService] the remote HybridClockService
+    # @param now [Integer] the current time
     def receive(remote_hybrid_clock, now: Time.current.to_i)
+      raise TypeError, 'now expects an integer' unless now.is_a?(Integer)
+
       if now > ts && now > remote_hybrid_clock.ts
         @ts = now
+        @count = 0
       elsif ts == remote_hybrid_clock.ts
-        @ts = now
         @count = [count, remote_hybrid_clock.count].max + 1
       elsif ts > remote_hybrid_clock.ts
-        @ts = now
         @count += 1
       else
         @ts = remote_hybrid_clock.ts
