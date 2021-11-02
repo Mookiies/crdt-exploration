@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-# TODO tomorrow
-# replace datetime with HLC's
+# TODO: tomorrow
 # Write some tests to validate inspection. Make iterating easier.
-# how global is HLC? Per field (is the answer the same server vs client)
 # urql stuff
+# Transactions
+# DSL
+#
 
 class Inspection < ApplicationRecord
   has_many :areas, autosave: true, dependent: :destroy
@@ -13,6 +14,8 @@ class Inspection < ApplicationRecord
   default_scope { eager_load(:timestamps) }
 
   after_initialize :init_timestamps, if: -> { timestamps.nil? }
+
+  before_save :discard_erroneous_timestamps, if: -> { timestamps.has_changes_to_save? }
   before_save :check_timestamps, if: :has_changes_to_save?
 
   # This is useful for supporting creation w/o id's
@@ -63,19 +66,8 @@ class Inspection < ApplicationRecord
       field_name = change[0]
       next unless (TIMESTAMPED_FIELDS.map(&:to_s)).include?(field_name)
 
-      # TODO for these timestamps to operate as HLC's there's gonna have to be some way to actually do send/recieve
-      next_ts = if timestamps[field_name]
-                  HybridLogicalClock::Hlc.unpack(timestamps[field_name])
-                else
-                  # TODO shouldn't this really be MyHlc.send(Time.current.to_i)
-                  HybridLogicalClock::Hlc.new(node: '???', now: Time.current.to_i) # Gernerate HLC for 'current' time
-                end
-
-      current_ts = if timestamps.send("#{field_name}_was")
-                     HybridLogicalClock::Hlc.unpack(timestamps.send("#{field_name}_was"))
-                   else
-                     HybridLogicalClock::Hlc.new(node: '???', now: 0) # Generate infinetly old TS
-                   end
+      next_ts = compute_next_ts(field_name)
+      current_ts = compute_current_ts(field_name)
 
       next_value = self[field_name]
       current_value = send("#{field_name}_was")
@@ -87,6 +79,36 @@ class Inspection < ApplicationRecord
 
       timestamps[field_name] = result.timestamp.pack
       self[field_name] = result.value
+    end
+  end
+
+  private
+
+  def discard_erroneous_timestamps
+    timestamps.changes.each do |change|
+      field_name = change[0]
+      timestamps[field_name] = timestamps.send("#{field_name}_was") unless send("#{field_name}_changed?")
+    end
+  end
+
+  def compute_current_ts(field_name)
+    if timestamps.send("#{field_name}_changed?")
+      HybridLogicalClock::Hlc.unpack(timestamps.send("#{field_name}_was"))
+    else
+      HybridLogicalClock::Hlc.new(node: '???', now: 0) # Generate infinetly old TS
+    end
+  end
+
+  def compute_next_ts(field_name)
+    if timestamps.send("#{field_name}_changed?")
+      # Change came with a timestamp, use timestamp that came with change
+      HybridLogicalClock::Hlc.unpack(timestamps[field_name])
+    elsif timestamps[field_name]
+      # Change came without a timestamp, generate a winning HLC
+      HybridLogicalClock::Hlc.unpack(timestamps[field_name]).send
+    else
+      # No existing HLC
+      HybridLogicalClock::Hlc.new(node: '???', now: Time.current.to_i)
     end
   end
 end
