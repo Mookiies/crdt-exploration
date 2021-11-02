@@ -9,7 +9,7 @@
 class Inspection < ApplicationRecord
   has_many :areas, autosave: true, dependent: :destroy
 
-  has_one :timestamps, autosave: true, class_name: 'InspectionsTimestamp'
+  has_one :timestamps, autosave: true, class_name: 'InspectionsTimestamp', dependent: :destroy
   default_scope { eager_load(:timestamps) }
 
   after_initialize :init_timestamps, if: -> { timestamps.nil? }
@@ -63,8 +63,19 @@ class Inspection < ApplicationRecord
       field_name = change[0]
       next unless (TIMESTAMPED_FIELDS.map(&:to_s)).include?(field_name)
 
-      next_ts = timestamps[field_name] || DateTime.now.to_s
-      current_ts = timestamps.send("#{field_name}_was") || 100.years.ago.to_s
+      # TODO for these timestamps to operate as HLC's there's gonna have to be some way to actually do send/recieve
+      next_ts = if timestamps[field_name]
+                  HybridLogicalClock::Hlc.unpack(timestamps[field_name])
+                else
+                  # TODO shouldn't this really be MyHlc.send(Time.current.to_i)
+                  HybridLogicalClock::Hlc.new(node: '???', now: Time.current.to_i) # Gernerate HLC for 'current' time
+                end
+
+      current_ts = if timestamps.send("#{field_name}_was")
+                     HybridLogicalClock::Hlc.unpack(timestamps.send("#{field_name}_was"))
+                   else
+                     HybridLogicalClock::Hlc.new(node: '???', now: 0) # Generate infinetly old TS
+                   end
 
       next_value = self[field_name]
       current_value = send("#{field_name}_was")
@@ -74,8 +85,7 @@ class Inspection < ApplicationRecord
 
       result = current_lww.merge(next_lww)
 
-      # Change timestamp is older. Rollback change to field and to it's timestamp
-      timestamps[field_name] = result.timestamp
+      timestamps[field_name] = result.timestamp.pack
       self[field_name] = result.value
     end
   end
