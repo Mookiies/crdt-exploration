@@ -64,7 +64,7 @@ class Inspection < ApplicationRecord
   def check_timestamps
     changes.each do |change|
       field_name = change[0]
-      next unless (TIMESTAMPED_FIELDS.map(&:to_s)).include?(field_name)
+      next unless timestamped_field?(field_name)
 
       next_ts = compute_next_ts(field_name)
       current_ts = compute_current_ts(field_name)
@@ -84,10 +84,16 @@ class Inspection < ApplicationRecord
 
   private
 
+  def timestamped_field?(field_name)
+    (TIMESTAMPED_FIELDS.map(&:to_s)).include?(field_name)
+  end
+
   def discard_erroneous_timestamps
     timestamps.changes.each do |change|
       field_name = change[0]
-      timestamps[field_name] = timestamps.send("#{field_name}_was") unless send("#{field_name}_changed?")
+      unless timestamped_field?(field_name) && send("#{field_name}_changed?")
+        timestamps[field_name] = timestamps.send("#{field_name}_was")
+      end
     end
   end
 
