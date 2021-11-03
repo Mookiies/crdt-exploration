@@ -4,8 +4,12 @@ one:
   name: MyString
   position: 1
   tombstone: false
+  inspection_id: 1
+  uuid: one
 
 two:
   name: MyString
   position: 1
   tombstone: false
+  inspection_id: 1
+  uuid: two

@@ -1,9 +1,13 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
+  id: 1
   name: MyString
   tombstone: false
+  uuid: one
 
 two:
+  id: 2
   name: MyString
   tombstone: false
+  uuid: two

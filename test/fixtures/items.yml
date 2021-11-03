@@ -5,9 +5,13 @@ one:
   note: MyText
   flagged: false
   tombstone: false
+  area_id: 1
+  uuid: one
 
 two:
   name: MyString
   note: MyText
   flagged: false
   tombstone: false
+  area_id: 1
+  uuid: two
