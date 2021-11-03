@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_25_203228) do
+ActiveRecord::Schema.define(version: 2021_11_03_204802) do
 
   create_table "areas", charset: "utf8mb4", force: :cascade do |t|
     t.string "name", null: false
@@ -37,12 +37,14 @@ ActiveRecord::Schema.define(version: 2021_10_25_203228) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "uuid", null: false
+    t.text "note"
     t.index ["uuid"], name: "index_inspections_on_uuid", unique: true
   end
 
   create_table "inspections_timestamps", charset: "utf8mb4", force: :cascade do |t|
     t.string "name"
     t.bigint "inspection_id", null: false
+    t.string "note"
     t.index ["inspection_id"], name: "index_inspections_timestamps_on_inspection_id", unique: true
   end
 

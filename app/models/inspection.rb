@@ -21,7 +21,7 @@ class Inspection < ApplicationRecord
   # This is useful for supporting creation w/o id's
   attribute :uuid, :string, default: -> { SecureRandom.uuid }
 
-  TIMESTAMPED_FIELDS = [:name].freeze
+  TIMESTAMPED_FIELDS = %i[name note].freeze
 
   def timestamps_attributes=(attributes)
     attributes = attributes.with_indifferent_access
