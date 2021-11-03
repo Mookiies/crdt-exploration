@@ -92,10 +92,12 @@ class Inspection < ApplicationRecord
   end
 
   def compute_current_ts(field_name)
-    if timestamps.send("#{field_name}_changed?")
+    if timestamps.send("#{field_name}_changed?") && timestamps.send("#{field_name}_was").present?
+      # There existed a non-null HLC for this record already
       HybridLogicalClock::Hlc.unpack(timestamps.send("#{field_name}_was"))
     else
-      HybridLogicalClock::Hlc.new(node: '???', now: 0) # Generate infinetly old TS
+      # No previous HLC, generate an old one that will lose comparison
+      HybridLogicalClock::Hlc.new(node: '???', now: 0)
     end
   end
 
@@ -103,7 +105,7 @@ class Inspection < ApplicationRecord
     if timestamps.send("#{field_name}_changed?")
       # Change came with a timestamp, use timestamp that came with change
       HybridLogicalClock::Hlc.unpack(timestamps[field_name])
-    elsif timestamps[field_name]
+    elsif timestamps[field_name].present?
       # Change came without a timestamp, generate a winning HLC
       HybridLogicalClock::Hlc.unpack(timestamps[field_name]).send
     else
