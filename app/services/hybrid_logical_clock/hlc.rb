@@ -47,6 +47,7 @@ module HybridLogicalClock
     def send(now: Time.current.to_i)
       if now > ts
         @ts = now
+        @count = 0
         return self
       end
 
