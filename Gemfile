@@ -23,6 +23,7 @@ gem 'bootsnap', '>= 1.4.4', require: false
 gem 'graphql'
 gem 'graphiql-rails'
 gem 'sass-rails'
+gem 'rack-cors'
 
 gem 'mocha'
 
