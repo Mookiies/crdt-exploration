@@ -11,6 +11,7 @@ module Types
     argument :tombstone, Boolean, required: false
 
     argument :items_attributes, [Types::ItemAttributes], required: false
+    argument :timestamps_attributes, Types::AreasTimestampAttributes, required: false
 
     argument  :_deleted, Boolean, required: false
 
