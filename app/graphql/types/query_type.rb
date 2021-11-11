@@ -8,5 +8,12 @@ module Types
     def all_inspections
       Inspection.all
     end
+
+    field :inspection, Types::InspectionType, null: true do
+      argument :uuid, String, required: true
+    end
+    def inspection(uuid)
+      Inspection.find_by(uuid)
+    end
   end
 end
