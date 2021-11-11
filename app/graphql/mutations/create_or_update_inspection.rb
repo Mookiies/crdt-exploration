@@ -10,15 +10,23 @@ module Mutations
     argument :inspection, Types::InspectionAttributes, required: true
 
     def resolve(inspection:)
+      to_append_attributes = %i[timestamps areas items]
+
       # TODO: how to wrap all of this into one transaction (including timestamps)
       inspection_hash = inspection.to_hash
+      inspection_hash = inspection_hash.deep_transform_keys do |key|
+        if to_append_attributes.include?(key)
+          "#{key}_attributes".to_sym
+        else
+          key
+        end
+      end
       areas = inspection_hash[:areas_attributes]
+      puts inspection_hash.inspect
       record = Inspection.includes(areas: :items).update_or_create_by({ uuid: inspection_hash[:uuid] }, inspection_hash)
 
-      # TODO how and when to delete areas based on the array
-      # TODO have to explicitly specify that something is deleted (deleted_at column or something)
       areas&.each do |area|
-        area_record = record.areas.find{ |a| a.uuid == area[:uuid] }
+        area_record = record.areas.find { |a| a.uuid == area[:uuid] }
         if deleted?(area)
           record.areas.destroy(area_record) if area_record.present?
           next
@@ -33,7 +41,7 @@ module Mutations
 
         items = area.to_hash[:items_attributes]
         items&.each do |item|
-          item_record = area_record.items.find{ |i| i.uuid == item[:uuid] }
+          item_record = area_record.items.find { |i| i.uuid == item[:uuid] }
           if deleted?(item)
             area_record.items.destroy(item_record) if item_record.present?
             next
