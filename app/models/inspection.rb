@@ -1,12 +1,5 @@
 # frozen_string_literal: true
 
-# TODO: tomorrow
-# Write some tests to validate inspection. Make iterating easier.
-# urql stuff
-# Transactions
-# DSL
-#
-
 class Inspection < ApplicationRecord
   has_many :areas, autosave: true, dependent: :destroy
 
@@ -34,16 +27,21 @@ class Inspection < ApplicationRecord
     end
   end
 
-  def self.update_or_create_by(args, attributes)
+  def self.update_or_create_by(args, attributes, &block)
     record = find_by(args)
     accepted_attributes = attribute_names.map(&:to_sym).push(:timestamps_attributes)
     trimmed_attributes = attributes.slice(*accepted_attributes)
     if record.nil?
       record = new(trimmed_attributes)
+      record.with_lock do
+        block.call(record)
+      end
     else
-      record.assign_attributes(trimmed_attributes)
+      record.with_lock do # TODO make this work with lock version instead
+        record.assign_attributes(trimmed_attributes)
+        block.call(record)
+      end
     end
-    record
   end
 
   def init_timestamps
