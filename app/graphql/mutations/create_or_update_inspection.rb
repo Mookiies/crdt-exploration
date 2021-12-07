@@ -5,7 +5,7 @@ module Mutations
     # Return fields
     field :errors, [String], null: false
     field :success, Boolean, null: false
-    field :inspection, Types::InspectionType, null: false
+    field :inspection, Types::InspectionType, null: true
 
     argument :inspection, Types::InspectionAttributes, required: true
 
@@ -23,20 +23,37 @@ module Mutations
       end
       areas = inspection_hash[:areas_attributes]
       puts inspection_hash.inspect
-      Inspection.includes(areas: :items).update_or_create_by({ uuid: inspection_hash[:uuid] },
-                                                             inspection_hash) do |record|
+      Inspection.includes(areas: :items)
+                .update_or_create_by({ uuid: inspection_hash[:uuid] }, inspection_hash) do |record|
+        #TODO how to handle soft deleted records?
+        # we want to apply these changes but don't want them in the final result...
+        # This if is just an escape for now to bail out of doing anything to deleted inspections
+        if deleted?(inspection_hash) || record.hidden?
+          record.hide
+          if record.save
+            return { success: true, inspection: nil, errors: [] }
+          else
+            return { success: false, inspection: nil, errors: ['error'] }
+          end
+        end
+
         areas&.each do |area|
           area_record = record.areas.find { |a| a.uuid == area[:uuid] }
-          if deleted?(area)
-            record.areas.destroy(area_record) if area_record.present?
-            next
+          area_args = area.to_hash.except(:items_attributes, :_deleted)
+          if area_record.present?
+            area_record.assign_attributes(area_args)
+          else
+            # TODO hacky workaround to default scope visible
+            if Area.unscoped.find_by(uuid: area_args[:uuid])
+              # This case means that the record was not loaded originially (and if found here is therefore deleted)
+              # Do nothing for now (but this is bad CRDT)
+            else
+              area_record = record.areas.new(area_args)
+            end
           end
 
-          area_args = area.to_hash.except(:items_attributes, :_deleted)
-          if area_record.nil?
-            area_record = record.areas.new(area_args)
-          else
-            area_record.assign_attributes(area_args)
+          if deleted?(area) && area_record.present?
+            area_record.hide
           end
 
           items = area.to_hash[:items_attributes]
