@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_03_204802) do
+ActiveRecord::Schema.define(version: 2021_12_06_194634) do
 
   create_table "areas", charset: "utf8mb4", force: :cascade do |t|
     t.string "name", null: false
@@ -20,6 +20,7 @@ ActiveRecord::Schema.define(version: 2021_11_03_204802) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "uuid", null: false
+    t.datetime "deleted_at"
     t.index ["inspection_id"], name: "index_areas_on_inspection_id"
     t.index ["uuid"], name: "index_areas_on_uuid", unique: true
   end
@@ -38,6 +39,7 @@ ActiveRecord::Schema.define(version: 2021_11_03_204802) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "uuid", null: false
     t.text "note"
+    t.datetime "deleted_at"
     t.index ["uuid"], name: "index_inspections_on_uuid", unique: true
   end
 
@@ -57,6 +59,7 @@ ActiveRecord::Schema.define(version: 2021_11_03_204802) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "uuid", null: false
+    t.datetime "deleted_at"
     t.index ["area_id"], name: "index_items_on_area_id"
     t.index ["uuid"], name: "index_items_on_uuid", unique: true
   end

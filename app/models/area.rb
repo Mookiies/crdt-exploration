@@ -1,9 +1,12 @@
 class Area < ApplicationRecord
+  include AfHideableModel::Hideable
+
   belongs_to :inspection, optional: false
   has_many :items, autosave: true, dependent: :destroy
 
   has_one :timestamps, autosave: true, class_name: 'AreasTimestamp', dependent: :destroy
   default_scope { eager_load(:timestamps) }
+  default_scope { without_hidden }
 
   after_initialize :init_timestamps, if: -> { timestamps.nil? }
 

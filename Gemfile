@@ -30,6 +30,10 @@ gem 'mocha'
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 # gem 'rack-cors'
 
+source "https://rubygems.pkg.github.com/appfolio" do
+  gem "af_hideable_model", "3.0.1"
+end
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

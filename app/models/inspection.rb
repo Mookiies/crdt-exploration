@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
 class Inspection < ApplicationRecord
+  include AfHideableModel::Hideable
+
   has_many :areas, autosave: true, dependent: :destroy
 
   has_one :timestamps, autosave: true, class_name: 'InspectionsTimestamp', dependent: :destroy
   default_scope { eager_load(:timestamps) }
+  default_scope { without_hidden }
 
   after_initialize :init_timestamps, if: -> { timestamps.nil? }
 
