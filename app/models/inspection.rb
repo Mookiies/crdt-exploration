@@ -31,16 +31,14 @@ class Inspection < ApplicationRecord
   end
 
   def self.update_or_create_by(args, attributes, &block)
-    record = find_by(args)
-    accepted_attributes = attribute_names.map(&:to_sym).push(:timestamps_attributes)
-    trimmed_attributes = attributes.slice(*accepted_attributes)
-    if record.nil?
-      record = new(trimmed_attributes)
-      record.with_lock do
+    transaction(isolation: :serializable) do
+      record = lock.find_with_hidden.find_by(args)
+      accepted_attributes = attribute_names.map(&:to_sym).push(:timestamps_attributes)
+      trimmed_attributes = attributes.slice(*accepted_attributes)
+      if record.nil?
+        record = new(trimmed_attributes)
         block.call(record)
-      end
-    else
-      record.with_lock do # TODO make this work with lock version instead
+      else
         record.assign_attributes(trimmed_attributes)
         block.call(record)
       end
