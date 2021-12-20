@@ -108,7 +108,7 @@ class Area < ApplicationRecord
       HybridLogicalClock::Hlc.unpack(timestamps[field_name])
     elsif timestamps[field_name].present?
       # Change came without a timestamp, generate a winning HLC
-      HybridLogicalClock::Hlc.unpack(timestamps[field_name]).send
+      HybridLogicalClock::Hlc.unpack(timestamps[field_name]).increment
     else
       # No existing HLC
       HybridLogicalClock::Hlc.new(node: '???', now: Time.current.to_i)
