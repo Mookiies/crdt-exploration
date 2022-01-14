@@ -17,9 +17,9 @@ ActiveRecord::Schema.define(version: 2021_12_06_194634) do
     t.integer "position"
     t.boolean "tombstone", default: false, null: false
     t.bigint "inspection_id", null: false
+    t.string "uuid", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.string "uuid", null: false
     t.datetime "deleted_at"
     t.index ["inspection_id"], name: "index_areas_on_inspection_id"
     t.index ["uuid"], name: "index_areas_on_uuid", unique: true
@@ -35,9 +35,9 @@ ActiveRecord::Schema.define(version: 2021_12_06_194634) do
   create_table "inspections", charset: "utf8mb4", force: :cascade do |t|
     t.string "name", null: false
     t.boolean "tombstone", default: false, null: false
+    t.string "uuid", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.string "uuid", null: false
     t.text "note"
     t.datetime "deleted_at"
     t.index ["uuid"], name: "index_inspections_on_uuid", unique: true
@@ -56,9 +56,9 @@ ActiveRecord::Schema.define(version: 2021_12_06_194634) do
     t.boolean "flagged", default: false, null: false
     t.boolean "tombstone", default: false, null: false
     t.bigint "area_id", null: false
+    t.string "uuid", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.string "uuid", null: false
     t.datetime "deleted_at"
     t.index ["area_id"], name: "index_items_on_area_id"
     t.index ["uuid"], name: "index_items_on_uuid", unique: true

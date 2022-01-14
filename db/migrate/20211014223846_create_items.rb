@@ -6,8 +6,11 @@ class CreateItems < ActiveRecord::Migration[6.1]
       t.boolean :flagged, null: false, default: false
       t.boolean :tombstone, null: false, default: false
       t.belongs_to :area, foreign_key: true, null: false
+      t.string :uuid, null: false
 
       t.timestamps
+
+      t.index :uuid, unique: true
     end
   end
 end
