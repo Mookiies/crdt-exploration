@@ -36,6 +36,17 @@ module TimestampDsl
     end
   end
 
+  def assign_attributes_with_timestamps(attributes)
+    return if attributes.blank?
+
+    attributes = attributes.stringify_keys
+    timestamps_attributes = attributes['timestamps_attributes']
+    raise ArgumentError if timestamps.nil?
+
+    assign_attributes(attributes)
+    timestamps.assign_attributes(timestamps_attributes)
+  end
+
   def timestamps_attributes=(attributes)
     attributes = attributes.with_indifferent_access
     existing_record = timestamps

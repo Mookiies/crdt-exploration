@@ -46,8 +46,7 @@ class InspectionTest < ActiveSupport::TestCase
     change_hlc = HybridLogicalClock::Hlc.new(node: NODE, now: Time.mktime(2000,1,1,1,1,1).to_i).pack
     new_name = 'new_name!'
     i = Inspection.find(1)
-    i.assign_attributes(name: new_name)
-    i.timestamps.assign_attributes({name: change_hlc})
+    i.assign_attributes_with_timestamps(name: new_name, timestamps_attributes: { name: change_hlc })
     assert_nothing_raised do
       i.save!
     end
@@ -74,7 +73,7 @@ class InspectionTest < ActiveSupport::TestCase
     i.save!
 
     new_name = 'new_name!'
-    i.assign_attributes(name: new_name)
+    i.assign_attributes(name: new_name, timestamps_attributes: { name: new_hlc })
     i.timestamps.assign_attributes({name: new_hlc})
     i.save!
     assert_equal(new_name, i.name)
@@ -88,8 +87,7 @@ class InspectionTest < ActiveSupport::TestCase
     i.save!
 
     new_name = 'new_name!'
-    i.assign_attributes(name: new_name)
-    i.timestamps.assign_attributes(name: old_hlc)
+    i.assign_attributes_with_timestamps(name: new_name, timestamps_attributes:{name: old_hlc})
     i.save!
     assert_equal('test', i.name)
     assert_equal(new_hlc, i.timestamps.name)
@@ -101,7 +99,7 @@ class InspectionTest < ActiveSupport::TestCase
     i = Inspection.new(name: 'test', timestamps_attributes: {name: current_hlc})
     i.save!
 
-    i.timestamps.assign_attributes({name: new_hlc})
+    i.assign_attributes(timestamps_attributes: { name: new_hlc })
     i.save!
 
     assert_equal('test', i.name)
