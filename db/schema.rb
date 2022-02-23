@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_12_06_194634) do
+ActiveRecord::Schema.define(version: 2022_02_22_200442) do
 
   create_table "areas", charset: "utf8mb4", force: :cascade do |t|
     t.string "name", null: false
@@ -40,6 +40,7 @@ ActiveRecord::Schema.define(version: 2021_12_06_194634) do
     t.datetime "updated_at", precision: 6, null: false
     t.text "note"
     t.datetime "deleted_at"
+    t.json "timestamps"
     t.index ["uuid"], name: "index_inspections_on_uuid", unique: true
   end
 

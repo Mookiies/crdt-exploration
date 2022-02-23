@@ -2,38 +2,41 @@
 
 class Inspection < ApplicationRecord
   include AfHideableModel::Hideable
+  serialize :timestamps
 
+  after_initialize :init_timestamps
   has_many :areas, autosave: true, dependent: :destroy
 
-  has_one :timestamps, autosave: true, class_name: 'InspectionsTimestamp', dependent: :destroy
-  default_scope { eager_load(:timestamps) }
   default_scope { without_hidden }
 
-  after_initialize :init_timestamps, if: -> { timestamps.nil? }
-
-  before_save :discard_erroneous_timestamps, if: -> { timestamps.has_changes_to_save? }
+  before_save :discard_erroneous_timestamps, if: -> { will_save_change_to_timestamps? }
   before_save :check_timestamps, if: :has_changes_to_save?
 
   # This is useful for supporting creation w/o id's
   attribute :uuid, :string, default: -> { SecureRandom.uuid }
+  attribute :timestamps, :json
 
   TIMESTAMPED_FIELDS = %i[name note].freeze
 
-  def timestamps_attributes=(attributes)
-    attributes = attributes.with_indifferent_access
-    existing_record = timestamps
-
-    if existing_record
-      existing_record.assign_attributes(attributes.slice(*TIMESTAMPED_FIELDS))
-    else
-      build_timestamps(attributes)
-    end
+  def init_timestamps
+    self.timestamps ||= TIMESTAMPED_FIELDS.to_h { |x| [x, nil] }
   end
 
+  # def timestamps_attributes=(attributes)
+  #   attributes = attributes.with_indifferent_access
+  #   existing_record = timestamps
+  #
+  #   if existing_record
+  #     existing_record.assign_attributes(attributes.slice(*TIMESTAMPED_FIELDS))
+  #   else
+  #     build_timestamps(attributes)
+  #   end
+  # end
+  #
   def self.update_or_create_by(args, attributes, &block)
     transaction(isolation: :serializable) do
       record = lock.find_with_hidden.find_by(args)
-      accepted_attributes = attribute_names.map(&:to_sym).push(:timestamps_attributes)
+      accepted_attributes = attribute_names.map(&:to_sym)
       trimmed_attributes = attributes.slice(*accepted_attributes)
       if record.nil?
         record = new(trimmed_attributes)
@@ -44,22 +47,18 @@ class Inspection < ApplicationRecord
       end
     end
   end
-
-  def init_timestamps
-    build_timestamps
-  end
-
-  # nil - because sent from online
-  # nil - because it already existed
-  # timestamps - because made in app
-  # [db state, next]
-  # [[nil, x], [y]] ==> infinitely old
-  # [[x], [nil, y]] ==> infinetly new
   #
-  # [[nil, x], [nil, y]] => [server_ts, y]
-  # [[nil, x], [ts, y]] => [ts, y]
-  # [[ts_x, x], [nil, y]] => [server_ts, y]
-  # [[ts_x, x], [ts_y, y]] => x >= y ? [ts_x, x] : [ts_y, y]
+  # # nil - because sent from online
+  # # nil - because it already existed
+  # # timestamps - because made in app
+  # # [db state, next]
+  # # [[nil, x], [y]] ==> infinitely old
+  # # [[x], [nil, y]] ==> infinetly new
+  # #
+  # # [[nil, x], [nil, y]] => [server_ts, y]
+  # # [[nil, x], [ts, y]] => [ts, y]
+  # # [[ts_x, x], [nil, y]] => [server_ts, y]
+  # # [[ts_x, x], [ts_y, y]] => x >= y ? [ts_x, x] : [ts_y, y]
   def check_timestamps
     changes.each do |change|
       field_name = change[0]
@@ -76,7 +75,7 @@ class Inspection < ApplicationRecord
 
       result = current_lww.merge(next_lww)
 
-      timestamps[field_name] = result.timestamp.pack
+      self.timestamps[field_name] = result.timestamp.pack
       self[field_name] = result.value
     end
   end
@@ -88,26 +87,32 @@ class Inspection < ApplicationRecord
   end
 
   def discard_erroneous_timestamps
-    timestamps.changes.each do |change|
-      field_name = change[0]
-      unless timestamped_field?(field_name) && send("#{field_name}_changed?")
-        timestamps[field_name] = timestamps.send("#{field_name}_was")
+    timestamps.each do | field_name, timestamp|
+      puts "#{field_name} : #{timestamp}"
+      if timestamp_changed(field_name) && !will_save_change_to_attribute?(field_name)
+        self.timestamps[field_name] = get_database_ts(field_name)
       end
     end
   end
 
+  def get_database_ts(field_name)
+    database_ts = timestamps_was
+    database_ts && database_ts[field_name]
+  end
+
+  def timestamp_changed(field_name)
+    database_ts = get_database_ts(field_name)
+    current_ts = timestamps[field_name]
+    database_ts != current_ts
+  end
+
   def compute_current_ts(field_name)
-    if timestamps.send("#{field_name}_changed?") && timestamps.send("#{field_name}_was").present?
-      # There existed a non-null HLC for this record already
-      HybridLogicalClock::Hlc.unpack(timestamps.send("#{field_name}_was"))
-    else
-      # No previous HLC, generate an old one that will lose comparison
-      HybridLogicalClock::Hlc.new(node: '???', now: 0)
-    end
+    database_ts = get_database_ts(field_name)
+    database_ts.present? ? HybridLogicalClock::Hlc.unpack(database_ts) : HybridLogicalClock::Hlc.new(node: '???', now: 0)
   end
 
   def compute_next_ts(field_name)
-    if timestamps.send("#{field_name}_changed?")
+    if timestamp_changed(field_name)
       # Change came with a timestamp, use timestamp that came with change
       HybridLogicalClock::Hlc.unpack(timestamps[field_name])
     elsif timestamps[field_name].present?
@@ -119,9 +124,3 @@ class Inspection < ApplicationRecord
     end
   end
 end
-
-# Test cases
-# - Various method or creating and updating
-# - Respects strategy for timestamps
-# - Cannot update just the timestamp in isolation
-# - Can assign with or without timestamp and correct behavior is there
