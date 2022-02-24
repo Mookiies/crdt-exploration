@@ -10,7 +10,7 @@ module Mutations
     argument :inspection, Types::InspectionAttributes, required: true
 
     def resolve(inspection:)
-      to_append_attributes = %i[timestamps areas items]
+      to_append_attributes = %i[areas items]
 
       # TODO: how to wrap all of this into one transaction (including timestamps)
       inspection_hash = inspection.to_hash

@@ -6,7 +6,9 @@ module Types
 
     field :all_inspections, [Types::InspectionType], null: false
     def all_inspections
-      Inspection.all
+      # Inspection.all
+      # Inspection.includes(:areas => [:items]).all
+      Inspection.eager_load(:areas => [:items]).all
     end
 
     field :inspection, Types::InspectionType, null: true do

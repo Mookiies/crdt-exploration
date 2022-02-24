@@ -162,6 +162,7 @@ GEM
 GEM
   remote: https://rubygems.pkg.github.com/appfolio/
   specs:
+    af_crdt (0.2.2.pre.2)
     af_hideable_model (3.0.1)
       rails (>= 5.2, < 7)
 
@@ -170,6 +171,7 @@ PLATFORMS
   x86_64-darwin-21
 
 DEPENDENCIES
+  af_crdt (= 0.2.2.pre.2)!
   af_hideable_model (= 3.0.1)!
   bootsnap (>= 1.4.4)
   byebug

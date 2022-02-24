@@ -8,8 +8,7 @@ module Types
     field :inspection_id, Integer, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :timestamps, Types::AreasTimestampType, null: false
-
+    field :timestamps, GraphQL::Types::JSON, null: true
 
     field :items, [Types::ItemType], null: false
   end
