@@ -3,10 +3,9 @@
 module Types
   class InspectionAttributes < Types::BaseInputObject
     description 'Attributes for creating an inspection'
-    # TODO: can this be re-used for updates and if so how to mark everything optional
     argument :id, Integer, required: false
-    argument :uuid, String, required: false
-    argument :name, String, required: true
+    argument :uuid, String, required: true
+    argument :name, String, required: false
     argument :note, String, required: false
     argument :tombstone, Boolean, required: false
 
