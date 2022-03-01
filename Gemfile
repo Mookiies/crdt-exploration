@@ -32,6 +32,7 @@ gem 'mocha'
 
 source "https://rubygems.pkg.github.com/appfolio" do
   gem "af_hideable_model", "3.0.1"
+  gem "af_crdt", "0.2.1.pre.1"
 end
 
 group :development, :test do

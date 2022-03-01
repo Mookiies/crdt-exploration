@@ -7,6 +7,8 @@ module Types
     field :all_inspections, [Types::InspectionType], null: false
     def all_inspections
       Inspection.all
+      # Inspection.includes(:areas => [:items]).all
+      Inspection.eager_load(:timestamps, :areas => [:timestamps, :items]).all
     end
 
     field :inspection, Types::InspectionType, null: true do
